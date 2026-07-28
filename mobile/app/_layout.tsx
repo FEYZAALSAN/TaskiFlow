@@ -5,6 +5,7 @@ import 'react-native-reanimated';
 
 import { AppThemeProvider, useTheme } from '@/context/ThemeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { ToastProvider } from '@/context/ToastContext';
 
 function RootLayoutContent() {
   const { isDark } = useTheme();
@@ -21,7 +22,9 @@ export default function RootLayout() {
   return (
     <AppThemeProvider>
       <LanguageProvider>
-        <RootLayoutContent />
+        <ToastProvider>
+          <RootLayoutContent />
+        </ToastProvider>
       </LanguageProvider>
     </AppThemeProvider>
   );

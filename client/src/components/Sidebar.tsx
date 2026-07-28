@@ -50,7 +50,8 @@ const tryGroup: Group = {
   label: "Try", key: "try",
   items: [
     { icon: "Activity", label: "Pulse", to: "/pulse" },
-    { icon: "Cpu",      label: "AI",    to: "/ai" },
+    // AI menüsü geçici kapalı — açmak için yorumu kaldır
+    // { icon: "Cpu",      label: "AI",    to: "/ai" },
   ],
 };
 

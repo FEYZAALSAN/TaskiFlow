@@ -1,17 +1,11 @@
-/**
- * Gemini servisi geçici olarak kapatıldı.
- * Yedek: server/disabled/geminiService.js.bak
- */
-// const { GoogleGenerativeAI } = require("@google/generative-ai");
-// const { PrismaClient } = require("@prisma/client");
-// const prisma = new PrismaClient();
-// const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// const model = genai.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { PrismaClient } = require("@prisma/client");
 
-async function sendMessage(/* userMessage, userId, history = [], projectContext = null */) {
-  throw new Error("AI geçici olarak kapalı.");
+const prisma = new PrismaClient();
+const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genai.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
 
-  /*
+async function sendMessage(userMessage, userId, history = [], projectContext = null) {
   let taskContext = "Henüz görev yok.";
 
   if (userId) {
@@ -58,7 +52,6 @@ Türkçe cevap ver. Samimi ve yardımcı ol.`;
   const chat = model.startChat({ history: chatHistory });
   const result = await chat.sendMessage(userMessage);
   return result.response.text();
-  */
 }
 
 module.exports = { sendMessage };

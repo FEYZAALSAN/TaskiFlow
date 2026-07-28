@@ -34,7 +34,9 @@ export default function TabLayout() {
       }}>
 
       <Tabs.Screen name="genel-bakis" options={{ title: t('tabs.overview'), tabBarIcon: ({ color }) => <IconSymbol size={24} name="folder.fill" color={color} /> }} />
-      <Tabs.Screen name="ai" options={{ title: t('tabs.ai'), tabBarIcon: ({ color }) => <IconSymbol size={24} name="sparkles" color={color} /> }} />
+      {/* AI sekmesi geçici kapalı — açmak için aşağıdaki satırı geri getir, href:null olanı sil */}
+      {/* <Tabs.Screen name="ai" options={{ title: t('tabs.ai'), tabBarIcon: ({ color }) => <IconSymbol size={24} name="sparkles" color={color} /> }} /> */}
+      <Tabs.Screen name="ai" options={{ href: null }} />
       <Tabs.Screen name="add" options={{ title: '', tabBarIcon: () => (
         <View style={styles.centerBtn}>
           <View style={styles.centerBtnInner}>

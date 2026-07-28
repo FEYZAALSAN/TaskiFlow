@@ -149,8 +149,8 @@ export default function ProfileScreen() {
 
   const [currentPlan, setCurrentPlan] = useState("FREE");
 
-  const [userName, setUserName] = useState("semra");
-  const [userEmail, setUserEmail] = useState("smtosun44@gmail.com");
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -198,6 +198,8 @@ export default function ProfileScreen() {
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [passwordSaving, setPasswordSaving] = useState(false);
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const [sessions, setSessions] = useState([
     {
@@ -633,16 +635,61 @@ export default function ProfileScreen() {
   };
 
   const handleDeleteAccount = () => {
+    if (!deleteAccountPassword.trim()) {
+      Alert.alert("Hata", "Hesabı silmek için şifrenizi girin.");
+      return;
+    }
+
     Alert.alert(
       "Hesabı Sil",
-      "Bu işlem geri alınamaz. Hesabı silmek istediğinize emin misiniz?",
+      "Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecek.",
       [
         { text: "İptal", style: "cancel" },
         {
           text: "Hesabı Sil",
           style: "destructive",
-          onPress: () =>
-            Alert.alert("Bilgi", "Bu işlem backend bağlanınca aktif edilebilir."),
+          onPress: async () => {
+            try {
+              setDeletingAccount(true);
+              const token = await AsyncStorage.getItem("token");
+
+              if (!token) {
+                Alert.alert("Hata", "Oturum bulunamadı.");
+                return;
+              }
+
+              const res = await fetch(`${API_URL}/users/account`, {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ password: deleteAccountPassword.trim() }),
+              });
+
+              const data = await res.json().catch(() => null);
+
+              if (!res.ok) {
+                Alert.alert("Hata", data?.error || data?.message || "Hesap silinemedi.");
+                return;
+              }
+
+              await AsyncStorage.multiRemove(["token", "user", "activeOrgId"]);
+              setSecurityModal(false);
+              setDeleteAccountPassword("");
+              Alert.alert("Tamamlandı", data?.message || "Hesabınız silindi.", [
+                {
+                  text: "Tamam",
+                  onPress: () => router.replace("/welcome"),
+                },
+              ]);
+            } catch (error) {
+              console.log("Hesap silme hatası:", error);
+              Alert.alert("Hata", "Sunucuya bağlanılamadı.");
+            } finally {
+              setDeletingAccount(false);
+            }
+          },
         },
       ]
     );
@@ -1485,10 +1532,25 @@ export default function ProfileScreen() {
                 <Pressable
                   style={[styles.dangerOutlineBtn, { backgroundColor: colors.card }]}
                   onPress={handleDeleteAccount}
+                  disabled={deletingAccount}
                 >
-                  <Text style={styles.dangerOutlineBtnText}>Hesabı sil</Text>
+                  <Text style={styles.dangerOutlineBtnText}>
+                    {deletingAccount ? "..." : "Hesabı sil"}
+                  </Text>
                 </Pressable>
               </View>
+
+              <Text style={[styles.securityInputLabel, { color: colors.textSecondary }]}>
+                Onay için şifreniz
+              </Text>
+              <TextInput
+                style={[styles.securityInput, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.inputText }]}
+                value={deleteAccountPassword}
+                onChangeText={setDeleteAccountPassword}
+                secureTextEntry
+                placeholder="••••••••"
+                placeholderTextColor={colors.placeholder}
+              />
             </SecurityAccordionItem>
 
             <View style={{ height: 24 }} />

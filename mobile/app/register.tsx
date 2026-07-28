@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import { API_URL } from "@/constants/api";
+import { API_URL, IS_API_CONFIGURED } from "@/constants/api";
 
 export default function RegisterScreen() {
     const router = useRouter();
@@ -27,6 +27,14 @@ export default function RegisterScreen() {
     const [loading, setLoading] = useState(false);
 
     const handleRegister = async () => {
+        if (!IS_API_CONFIGURED) {
+            Alert.alert(
+                "Yapılandırma Hatası",
+                "Sunucu adresi tanımlı değil. EXPO_PUBLIC_API_URL ayarlanmalı."
+            );
+            return;
+        }
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!name.trim() || !email.trim() || !password.trim()) {
@@ -121,9 +129,17 @@ export default function RegisterScreen() {
                             </Pressable>
                         </View>
 
-                        <Pressable onPress={() => setAgreeTerms(!agreeTerms)}>
-                            <Text style={{ marginTop: 10 }}>
-                                {agreeTerms ? "☑" : "☐"} Şartları kabul ediyorum
+                        <Pressable onPress={() => setAgreeTerms(!agreeTerms)} style={styles.termsRow}>
+                            <Text style={styles.termsCheck}>{agreeTerms ? "☑" : "☐"}</Text>
+                            <Text style={styles.termsText}>
+                                <Text onPress={() => router.push("/terms")} style={styles.termsLink}>
+                                    Kullanım Şartları
+                                </Text>
+                                {" ve "}
+                                <Text onPress={() => router.push("/privacy")} style={styles.termsLink}>
+                                    Gizlilik Politikası
+                                </Text>
+                                {"'nı kabul ediyorum"}
                             </Text>
                         </Pressable>
 
@@ -190,6 +206,16 @@ const styles = StyleSheet.create({
     },
 
     passwordInput: { flex: 1, height: 48 },
+
+    termsRow: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 8,
+        marginTop: 10,
+    },
+    termsCheck: { fontSize: 16, lineHeight: 22 },
+    termsText: { flex: 1, fontSize: 13, color: "#374151", lineHeight: 20 },
+    termsLink: { color: "#2563EB", fontWeight: "700" },
 
     button: {
         marginTop: 12,

@@ -3,6 +3,20 @@ import Constants from "expo-constants";
 
 const API_PORT = 5000;
 
+function normalizeBaseUrl(url: string): string {
+  return url.trim().replace(/\/$/, "").replace(/\/api$/, "");
+}
+
+function getConfiguredApiUrl(): string | null {
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
+  if (fromEnv) return normalizeBaseUrl(fromEnv);
+
+  const fromExtra = Constants.expoConfig?.extra?.apiUrl as string | undefined;
+  if (fromExtra) return normalizeBaseUrl(fromExtra);
+
+  return null;
+}
+
 function getDevServerHost(): string | null {
   const hostUri = Constants.expoConfig?.hostUri;
   if (hostUri) {
@@ -21,17 +35,19 @@ function getDevServerHost(): string | null {
 }
 
 function resolveApiBase(): string {
-  const devHost = getDevServerHost();
-  if (devHost) {
-    return `http://${devHost}:${API_PORT}`;
+  const configured = getConfiguredApiUrl();
+  if (configured) return configured;
+
+  if (__DEV__) {
+    const devHost = getDevServerHost();
+    if (devHost) return `http://${devHost}:${API_PORT}`;
+    if (Platform.OS === "android") return `http://10.0.2.2:${API_PORT}`;
+    return `http://localhost:${API_PORT}`;
   }
 
-  if (Platform.OS === "android") {
-    return `http://10.0.2.2:${API_PORT}`;
-  }
-
-  return `http://localhost:${API_PORT}`;
+  return "";
 }
 
 export const API_BASE = resolveApiBase();
-export const API_URL = `${API_BASE}/api`;
+export const API_URL = API_BASE ? `${API_BASE}/api` : "";
+export const IS_API_CONFIGURED = Boolean(API_BASE);

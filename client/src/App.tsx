@@ -34,7 +34,8 @@ import Projelerim from "./pages/Projelerim";
 import Footer from "./components/Footer";
 import Layout from "./components/Layout";
 
-import AIPage from "./pages/AI";
+// AI sayfası geçici kapalı — açmak için yorumu kaldır
+// import AIPage from "./pages/AI";
 import Pulse from "./pages/Pulse"
 
 import Connected from "./pages/ConnectedAccounts";
@@ -87,7 +88,7 @@ const App = () => (
 
                     {/* Panel — Sidebar VAR */}
                     <Route element={<Layout />}>
-                        <Route path="/ai" element={<AIPage />} />
+                        {/* <Route path="/ai" element={<AIPage />} /> */}
                         <Route path="/pulse" element={<Pulse />} />
                         <Route path="/inbox" element={<Notifications />} />
                         <Route path="/members" element={<Members />} />

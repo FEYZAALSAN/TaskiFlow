@@ -1,13 +1,6 @@
-/**
- * Chat/AI controller geçici olarak kapatıldı.
- * Yedek: server/disabled/chatController.js.bak
- */
-// const { sendMessage } = require("../services/geminiService");
+const { sendMessage } = require("../services/geminiService");
 
 exports.chat = async (req, res) => {
-  return res.status(503).json({ error: "AI geçici olarak kapalı." });
-
-  /*
   const { message } = req.body;
   const userId = req.user.id || req.user.userId;
 
@@ -22,5 +15,4 @@ exports.chat = async (req, res) => {
     console.error("Chat hatası:", error);
     res.status(500).json({ error: "Yapay zeka yanıt veremedi." });
   }
-  */
 };

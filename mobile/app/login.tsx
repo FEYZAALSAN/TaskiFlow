@@ -15,11 +15,13 @@ import {
   
 } from "react-native";
 import { useRouter } from "expo-router";
-import { API_URL } from "@/constants/api";
+import { API_URL, IS_API_CONFIGURED } from "@/constants/api";
+import { useToast } from "@/context/ToastContext";
 import { Eye, EyeOff } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function LoginScreen() {
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +34,14 @@ export default function LoginScreen() {
   const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (!IS_API_CONFIGURED) {
+      Alert.alert(
+        "Yapılandırma Hatası",
+        "Sunucu adresi tanımlı değil. EXPO_PUBLIC_API_URL ayarlanmalı."
+      );
+      return;
+    }
+
     if (!email.trim() || !password.trim()) {
       Alert.alert("Hata", "Lütfen e-posta ve şifrenizi girin.");
       return;
@@ -40,10 +50,6 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-  console.log("API_URL:", API_URL);
-  console.log("LOGIN URL:", `${API_URL}/auth/login`);
-  console.log("Login başladı");
-
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
@@ -55,10 +61,7 @@ export default function LoginScreen() {
     }),
   });
 
-  console.log("Status:", response.status);
-
   const data = await response.json();
-  console.log("LOGIN RESPONSE:", data);
 
       if (!response.ok) {
         Alert.alert(
@@ -138,9 +141,9 @@ export default function LoginScreen() {
         return;
       }
 
-      Alert.alert(
-        "Başarılı",
-        data?.message || "Şifre sıfırlama bağlantısı gönderildi."
+      showToast(
+        data?.message || "Şifre sıfırlama bağlantısı gönderildi.",
+        "success"
       );
       setForgotModalVisible(false);
       setForgotEmail("");

@@ -1,7 +1,9 @@
 const {PrismaClient} = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const prisma = new PrismaClient();
+const { sendPasswordResetEmail, isEmailConfigured } = require("../services/emailService");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -137,4 +139,53 @@ exports.login = async (req,res) => {
     console.error("Login Error:", error);
     res.status(500).json({ error: "Sunucu hatası" });
   }
-}
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email || typeof email !== "string") {
+      return res.status(400).json({ error: "Geçerli bir e-posta girin." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (user) {
+      const resetToken = crypto.randomBytes(32).toString("hex");
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { verificationToken: resetToken },
+      });
+
+      const resetBase =
+        process.env.PASSWORD_RESET_URL ||
+        "https://taskiflow.com/reset-password";
+      const resetLink = `${resetBase}?token=${resetToken}&email=${encodeURIComponent(normalizedEmail)}`;
+
+      const sent = await sendPasswordResetEmail({
+        to: normalizedEmail,
+        resetLink,
+      });
+
+      if (!sent && !isEmailConfigured()) {
+        console.log("[forgot-password] Mailtrap/SMTP yok. Gelistirme token:", resetToken);
+        console.log("[forgot-password] Link:", resetLink);
+      } else if (!sent) {
+        console.error("[forgot-password] E-posta gonderilemedi:", normalizedEmail);
+      }
+    }
+
+    return res.json({
+      message:
+        "Eğer bu e-posta kayıtlıysa, şifre sıfırlama talimatları gönderildi.",
+    });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    return res.status(500).json({ error: "İstek işlenemedi." });
+  }
+};

@@ -8,7 +8,6 @@ import {
   FlatList,
   RefreshControl,
   ScrollView,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +15,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { API_URL } from "@/constants/api";
 import { useTheme } from "@/context/ThemeContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useToast } from "@/context/ToastContext";
 
 type NotificationItem = {
   id: string;
@@ -39,6 +39,7 @@ type SortKey = "NEWEST" | "UNREAD_FIRST";
 export default function BildirimlerScreen() {
   const { colors } = useTheme();
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [token, setToken] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -217,14 +218,15 @@ export default function BildirimlerScreen() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        Alert.alert("Hata", data?.error || data?.message || "Bildirimler güncellenemedi.");
+        showToast(data?.error || data?.message || "Bildirimler güncellenemedi.", "error");
         return;
       }
 
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      showToast("Tüm bildirimler okundu olarak işaretlendi.", "success");
     } catch (err) {
       console.log("Tümü okundu yapılamadı:", err);
-      Alert.alert("Hata", "Bildirimler güncellenemedi.");
+      showToast("Bildirimler güncellenemedi.", "error");
     } finally {
       setLoading(false);
     }
@@ -249,16 +251,16 @@ export default function BildirimlerScreen() {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert(
-          "Başarılı",
-          action === "ACCEPT" ? "Ekibe katıldınız!" : "Davet reddedildi."
+        showToast(
+          action === "ACCEPT" ? "Ekibe katıldınız!" : "Davet reddedildi.",
+          "success"
         );
         fetchNotifications();
       } else {
-        Alert.alert("Hata", data.error || "İşlem başarısız.");
+        showToast(data.error || "İşlem başarısız.", "error");
       }
     } catch (e) {
-      Alert.alert("Hata", "Sunucuya bağlanılamadı.");
+      showToast("Sunucuya bağlanılamadı.", "error");
     }
   };
 

@@ -362,3 +362,61 @@ exports.changePassword = async (req, res) => {
       .json({ error: "Sunucu hatası. Lütfen daha sonra tekrar deneyin." });
   }
 };
+
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    const { password } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Yetkisiz erişim." });
+    }
+
+    if (!password || typeof password !== "string") {
+      return res.status(400).json({ error: "Hesabı silmek için şifrenizi girin." });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, password: true },
+    });
+
+    if (!user || !user.password) {
+      return res.status(404).json({ error: "Kullanıcı bulunamadı." });
+    }
+
+    const isValid = await bcrypt.compare(password.trim(), user.password);
+    if (!isValid) {
+      return res.status(400).json({ error: "Şifre yanlış." });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.task.updateMany({
+        where: { assigneeId: userId },
+        data: { assigneeId: null },
+      });
+
+      await tx.task.updateMany({
+        where: { ownerId: userId },
+        data: { ownerId: null },
+      });
+
+      const ownedOrganizations = await tx.organization.findMany({
+        where: { ownerId: userId },
+        select: { id: true },
+      });
+
+      for (const org of ownedOrganizations) {
+        await tx.organization.delete({ where: { id: org.id } });
+      }
+
+      await tx.project.deleteMany({ where: { ownerId: userId } });
+      await tx.user.delete({ where: { id: userId } });
+    });
+
+    return res.json({ message: "Hesabınız kalıcı olarak silindi." });
+  } catch (error) {
+    console.error("DeleteAccount Hatası:", error);
+    return res.status(500).json({ error: "Hesap silinemedi. Lütfen tekrar deneyin." });
+  }
+};

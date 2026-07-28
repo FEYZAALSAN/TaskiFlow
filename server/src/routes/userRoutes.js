@@ -9,5 +9,6 @@ router.use(authenticateToken);
 router.get("/me", userController.getMe);
 router.put("/profile", userController.updateProfile);
 router.put("/change-password", userController.changePassword);
+router.delete("/account", userController.deleteAccount);
 
 module.exports = router;

@@ -1,17 +1,9 @@
-/**
- * AI controller geçici olarak kapatıldı.
- * Yedek: server/disabled/aiController.js.bak
- */
-// const { GoogleGenerativeAI } = require("@google/generative-ai");
-// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-// const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const getAIChatResponse = async (req, res) => {
-  return res.status(503).json({
-    error: "AI geçici olarak kapalı.",
-  });
-
-  /*
   try {
     const { message } = req.body;
 
@@ -37,7 +29,6 @@ const getAIChatResponse = async (req, res) => {
       details: error.message,
     });
   }
-  */
 };
 
 module.exports = { getAIChatResponse };
