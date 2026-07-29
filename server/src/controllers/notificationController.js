@@ -2,10 +2,36 @@ const {PrismaClient} = require("@prisma/client");
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 
+async function ensureSampleNotifications(userId) {
+  const count = await prisma.notification.count({ where: { userId } });
+  if (count > 0) return;
+
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId,
+        title: "Hoş geldiniz",
+        message:
+          "TaskiFlow'a hoş geldiniz. Projelerinizi ve görevlerinizi buradan takip edebilirsiniz.",
+        type: "ALERT",
+        isRead: false,
+      },
+      {
+        userId,
+        title: "Görev hatırlatması",
+        message: "Bugün tamamlanması planlanan görevlerinizi kontrol etmeyi unutmayın.",
+        type: "TASK",
+        isRead: false,
+      },
+    ],
+  });
+}
+
 exports.getNotifications = async (req, res) =>{
     const userId = req.user.id || req.user.userId;
 
     try{
+        await ensureSampleNotifications(userId);
 
         const notifications = await prisma.notification.findMany({
             where: {
