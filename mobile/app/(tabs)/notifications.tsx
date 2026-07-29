@@ -189,20 +189,35 @@ export default function BildirimlerScreen() {
     );
   };
 
-  const markAsRead = async (id: string) => {
+  const setReadStatus = async (id: string, isRead: boolean) => {
     if (!token) return;
 
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, isRead } : n))
     );
 
     try {
-      await fetch(`${API_URL}/notifications/${id}/read`, {
+      const res = await fetch(`${API_URL}/notifications/${id}/read-status`, {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isRead }),
       });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        showToast(data?.error || "Bildirim güncellenemedi.", "error");
+        fetchNotifications();
+        return;
+      }
+
+      showToast(isRead ? "Okundu olarak işaretlendi." : "Okunmadı olarak işaretlendi.", "success");
     } catch (err) {
-      console.log("Bildirim okundu yapılamadı:", err);
+      console.log("Bildirim durumu güncellenemedi:", err);
+      showToast("Sunucuya bağlanılamadı.", "error");
+      fetchNotifications();
     }
   };
 
@@ -314,9 +329,7 @@ export default function BildirimlerScreen() {
             ? [styles.cardRead, { backgroundColor: colors.background, borderColor: colors.border }]
             : [styles.cardUnread, { backgroundColor: colors.card, borderColor: colors.primary }],
         ]}
-        onPress={() => {
-          if (!item.isRead) markAsRead(item.id);
-        }}
+        onPress={() => setReadStatus(item.id, !item.isRead)}
       >
         <View style={styles.cardTopRow}>
           <View style={isInvite ? styles.inviteIconBox : styles.taskIconBox}>
@@ -371,11 +384,17 @@ export default function BildirimlerScreen() {
             )}
           </View>
 
-          {!item.isRead && !isInvite && (
-            <Pressable style={styles.doneButton} onPress={() => markAsRead(item.id)}>
-              <MaterialIcons name="done" size={18} color="#2563EB" />
-            </Pressable>
-          )}
+          <Pressable
+            style={[styles.doneButton, { backgroundColor: colors.cardLight }]}
+            onPress={() => setReadStatus(item.id, !item.isRead)}
+            accessibilityLabel={item.isRead ? "Okunmadı işaretle" : "Okundu işaretle"}
+          >
+            <MaterialIcons
+              name={item.isRead ? "mark-email-unread" : "done"}
+              size={18}
+              color={item.isRead ? colors.textSecondary : "#2563EB"}
+            />
+          </Pressable>
         </View>
       </Pressable>
     );

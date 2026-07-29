@@ -116,11 +116,42 @@ exports.respondToInvıte = async (req, res) => {
 
 exports.markAsRead = async (req, res) => {
   try {
-    await prisma.notification.update({
-      where: { id: req.params.id },
-      data: { isRead: true }
+    const userId = req.user.id || req.user.userId;
+    const updated = await prisma.notification.updateMany({
+      where: { id: req.params.id, userId },
+      data: { isRead: true },
     });
-    res.json({ message: "Okundu işaretlendi." });
+    if (updated.count === 0) {
+      return res.status(404).json({ error: "Bildirim bulunamadı." });
+    }
+    res.json({ message: "Okundu işaretlendi.", isRead: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.updateReadStatus = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.userId;
+    const { isRead } = req.body;
+
+    if (typeof isRead !== "boolean") {
+      return res.status(400).json({ error: "isRead alanı boolean olmalıdır." });
+    }
+
+    const updated = await prisma.notification.updateMany({
+      where: { id: req.params.id, userId },
+      data: { isRead },
+    });
+
+    if (updated.count === 0) {
+      return res.status(404).json({ error: "Bildirim bulunamadı." });
+    }
+
+    res.json({
+      message: isRead ? "Okundu işaretlendi." : "Okunmadı olarak işaretlendi.",
+      isRead,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
