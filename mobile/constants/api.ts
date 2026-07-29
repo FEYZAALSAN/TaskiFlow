@@ -3,16 +3,19 @@ import Constants from "expo-constants";
 
 const API_PORT = 5000;
 
-function normalizeBaseUrl(url: string): string {
-  return url.trim().replace(/\/$/, "").replace(/\/api$/, "");
+function normalizeBaseUrl(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const url = raw.trim();
+  if (!url) return null;
+  return url.replace(/\/$/, "").replace(/\/api$/, "");
 }
 
 function getConfiguredApiUrl(): string | null {
-  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
-  if (fromEnv) return normalizeBaseUrl(fromEnv);
+  const fromEnv = normalizeBaseUrl(process.env.EXPO_PUBLIC_API_URL);
+  if (fromEnv) return fromEnv;
 
-  const fromExtra = Constants.expoConfig?.extra?.apiUrl as string | undefined;
-  if (fromExtra) return normalizeBaseUrl(fromExtra);
+  const fromExtra = normalizeBaseUrl(Constants.expoConfig?.extra?.apiUrl);
+  if (fromExtra) return fromExtra;
 
   return null;
 }

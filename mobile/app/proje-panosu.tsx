@@ -193,7 +193,7 @@ export default function ProjePanosuScreen() {
                 <SafeAreaView style={styles.safe}>
                     <View style={styles.header}>
                         <View style={styles.headerRow1}>
-                           <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace("/genel-bakis")} style={styles.backBtn}>
+                           <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)/genel-bakis")} style={styles.backBtn}>
     <MaterialIcons name="arrow-back" size={20} color={colors.textSecondary} />
 </Pressable>
 <Text style={styles.headerTitle}>{projectTitle.toUpperCase()}</Text>

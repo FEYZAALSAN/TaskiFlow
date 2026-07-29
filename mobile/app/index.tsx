@@ -8,7 +8,7 @@ export default function Index() {
 
   useEffect(() => {
     AsyncStorage.getItem('token').then((token) => {
-      setTarget(token ? '/genel-bakis' : '/welcome');
+      setTarget(token ? '/(tabs)/genel-bakis' : '/welcome');
     });
   }, []);
 

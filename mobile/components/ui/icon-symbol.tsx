@@ -27,6 +27,8 @@ const MAPPING = {
 
   // Dashboard
   'folder.fill': 'folder',
+  'chart.bar.fill': 'bar-chart',
+  'sparkles': 'auto-awesome',
   'checkmark.seal.fill': 'verified',
   'plus.circle.fill': 'add-circle',
   'plus.square.fill': 'add-box',

@@ -35,7 +35,10 @@ module.exports = {
       ],
     ],
     extra: {
-      apiUrl: process.env.EXPO_PUBLIC_API_URL || null,
+      apiUrl:
+        typeof process.env.EXPO_PUBLIC_API_URL === "string"
+          ? process.env.EXPO_PUBLIC_API_URL.trim() || undefined
+          : undefined,
       privacyPolicyUrl:
         process.env.EXPO_PUBLIC_PRIVACY_URL ||
         "https://taskiflow.com/privacy",
